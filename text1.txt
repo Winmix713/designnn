@@ -1,0 +1,538 @@
+# Once UI 2.0 | Dark - Fejlesztői Implementációs Útmutató
+
+## 📚 Bevezetés
+
+A **Once UI 2.0** design rendszer **Dark** témája egy modern, konzisztens és felhasználóbarát felületet biztosít alkalmazásaink számára. Ez az útmutató segít a fejlesztőknek a design rendszer pontos implementálásában, a Figma tervektől a működő React komponensekig.
+
+🔗 **Figma referencia:** [Once UI 2.0 | Dark prototípus](https://www.figma.com/proto/yvUdwkEmnjKpxFzieIjNFg/Once-UI-2.0-%7C-Dark)
+
+## 🎯 Alapelvek
+
+- **Konzisztencia:** Egységes megjelenés és viselkedés az egész alkalmazásban
+- **Tisztaság és Olvashatóság:** Optimális kontrasztarányok, letisztult elrendezés
+- **Modularitás:** Újrafelhasználható komponensek a fejlesztés gyorsítására
+- **Visszajelzés:** Interakciók és rendszerállapotok egyértelmű kommunikálása
+
+## 🎨 Design Tokenek
+
+### Színpaletta
+
+```css
+:root {
+  /* Primary Colors */
+  --color-primary-50: #EFF6FF;  /* Legvilágosabb */
+  --color-primary-100: #DBEAFE;
+  --color-primary-200: #BFDBFE;
+  --color-primary-300: #93C5FD;
+  --color-primary-400: #60A5FA;
+  --color-primary-500: #3B82F6;  /* Alap */
+  --color-primary-600: #2563EB;  /* Hover */
+  --color-primary-700: #1D4ED8;  /* Active */
+  --color-primary-800: #1E40AF;
+  --color-primary-900: #1E3A8A;  /* Legsötétebb */
+  
+  /* Secondary Colors */
+  --color-secondary-500: #EC4899;  /* Alap */
+  --color-secondary-600: #DB2777;  /* Hover */
+  --color-secondary-700: #BE185D;  /* Active */
+  
+  /* Background Colors */
+  --color-bg-default: #111827;  /* Alap háttér */
+  --color-bg-card: #1F2937;     /* Kártyák háttere */
+  --color-bg-elevated: #374151; /* Modális ablakok háttere */
+  
+  /* Text Colors */
+  --color-text-primary: #F9FAFB;    /* Fő szöveg */
+  --color-text-secondary: #D1D5DB;  /* Másodlagos szöveg */
+  --color-text-tertiary: #9CA3AF;   /* Segítő szöveg */
+  --color-text-disabled: #6B7280;   /* Inaktív állapot */
+  
+  /* Border Colors */
+  --color-border-default: #374151;  /* Alapértelmezett keret */
+  --color-border-focus: #3B82F6;    /* Fókuszált állapot kerete */
+  
+  /* System Colors */
+  --color-success-500: #10B981;     /* Siker */
+  --color-error-500: #EF4444;       /* Hiba */
+  --color-warning-500: #F59E0B;     /* Figyelmeztetés */
+  --color-info-500: #3B82F6;        /* Információ */
+}
+```
+
+### Tipográfia
+
+```css
+:root {
+  /* Font Family */
+  --font-family: 'Inter', sans-serif;
+  
+  /* Font Sizes */
+  --font-size-h1: 3rem;        /* 48px */
+  --font-size-h2: 2.25rem;     /* 36px */
+  --font-size-h3: 1.875rem;    /* 30px */
+  --font-size-h4: 1.5rem;      /* 24px */
+  --font-size-h5: 1.25rem;     /* 20px */
+  --font-size-h6: 1rem;        /* 16px */
+  --font-size-body-lg: 1.125rem; /* 18px */
+  --font-size-body-md: 1rem;   /* 16px - Alapértelmezett */
+  --font-size-body-sm: 0.875rem; /* 14px */
+  --font-size-caption: 0.75rem;  /* 12px */
+  
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  
+  /* Line Heights */
+  --line-height-tight: 1.25;    /* Címsorokhoz */
+  --line-height-normal: 1.5;    /* Törzsszöveghez */
+  --line-height-relaxed: 1.75;  /* Hosszabb bekezdésekhez */
+}
+```
+
+### Térközök
+
+```css
+:root {
+  /* 4px-alapú spacing skála */
+  --spacing-0: 0rem;          /* 0px */
+  --spacing-1: 0.25rem;       /* 4px */
+  --spacing-2: 0.5rem;        /* 8px */
+  --spacing-3: 0.75rem;       /* 12px */
+  --spacing-4: 1rem;          /* 16px */
+  --spacing-5: 1.25rem;       /* 20px */
+  --spacing-6: 1.5rem;        /* 24px */
+  --spacing-8: 2rem;          /* 32px */
+  --spacing-10: 2.5rem;       /* 40px */
+  --spacing-12: 3rem;         /* 48px */
+  --spacing-16: 4rem;         /* 64px */
+  --spacing-20: 5rem;         /* 80px */
+  --spacing-24: 6rem;         /* 96px */
+}
+```
+
+### Saroklekerekítések
+
+```css
+:root {
+  --radius-sm: 0.25rem;     /* 4px */
+  --radius-md: 0.5rem;      /* 8px */
+  --radius-lg: 0.75rem;     /* 12px */
+  --radius-xl: 1rem;        /* 16px */
+  --radius-full: 9999px;    /* Teljesen kerek (pill gombok, avatárok) */
+}
+```
+
+### Árnyékok
+
+```css
+:root {
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+```
+
+## 🧩 Komponensek
+
+### Gombok (Buttons)
+
+#### Variánsok
+
+- **Primary Button**: Fő akciókhoz, kék háttérrel és fehér szöveggel
+- **Secondary Button**: Másodlagos akciókhoz, lila/magenta háttérrel
+- **Tertiary/Text Button**: Kevésbé hangsúlyos akciókhoz, háttér nélkül
+- **Outline Button**: Keretes gomb háttér nélkül
+- **Icon Button**: Csak ikont tartalmazó gomb
+
+#### Méretek
+
+- **Small**: Kompakt méret (pl. kis területeken)
+- **Medium**: Alapértelmezett méret
+- **Large**: Kiemelt akciókhoz
+
+#### Állapotok
+
+Minden variánsnak definiált állapotai:
+- **Default**: Alap megjelenés
+- **Hover**: Egér felette (világosabb árnyalat)
+- **Active/Pressed**: Megnyomott állapot (sötétebb árnyalat)
+- **Focus**: Billentyűzettel fókuszált (kék keret)
+- **Disabled**: Inaktív állapot (szürke, alacsony kontraszt)
+
+#### React implementáció
+
+```jsx
+// Button.jsx
+import React from 'react';
+import './Button.css';
+import classNames from 'classnames';
+
+const Button = ({
+  children,
+  variant = 'primary',
+  size = 'medium',
+  disabled = false,
+  iconLeft,
+  iconRight,
+  onClick,
+  className,
+  ...props
+}) => {
+  const buttonClasses = classNames(
+    'once-button',
+    `once-button--${variant}`,
+    `once-button--${size}`,
+    { 'once-button--disabled': disabled },
+    className
+  );
+
+  return (
+    <button
+      className={buttonClasses}
+      disabled={disabled}
+      onClick={onClick}
+      {...props}
+    >
+      {iconLeft && <span className="once-button__icon--left">{iconLeft}</span>}
+      <span className="once-button__text">{children}</span>
+      {iconRight && <span className="once-button__icon--right">{iconRight}</span>}
+    </button>
+  );
+};
+
+export default Button;
+```
+
+```css
+/* Button.css */
+.once-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Variants */
+.once-button--primary {
+  background-color: var(--color-primary-500);
+  color: var(--color-text-primary);
+}
+
+.once-button--primary:hover:not(:disabled) {
+  background-color: var(--color-primary-600);
+}
+
+.once-button--primary:active:not(:disabled) {
+  background-color: var(--color-primary-700);
+}
+
+/* Secondary, tertiary, outline variants ... */
+
+/* Sizes */
+.once-button--small {
+  padding: var(--spacing-1) var(--spacing-3);
+  font-size: var(--font-size-body-sm);
+}
+
+.once-button--medium {
+  padding: var(--spacing-2) var(--spacing-4);
+  font-size: var(--font-size-body-md);
+}
+
+.once-button--large {
+  padding: var(--spacing-3) var(--spacing-6);
+  font-size: var(--font-size-body-lg);
+}
+
+/* Focus state */
+.once-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-200);
+}
+
+/* Disabled state */
+.once-button--disabled, .once-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Icons */
+.once-button__icon--left {
+  margin-right: var(--spacing-2);
+}
+
+.once-button__icon--right {
+  margin-left: var(--spacing-2);
+}
+```
+
+### Űrlapelemek (Forms)
+
+#### Text Input
+
+```jsx
+// TextInput.jsx
+import React from 'react';
+import './TextInput.css';
+import classNames from 'classnames';
+
+const TextInput = ({
+  label,
+  id,
+  value,
+  onChange,
+  placeholder,
+  disabled = false,
+  error,
+  helperText,
+  icon,
+  className,
+  ...props
+}) => {
+  const inputWrapperClasses = classNames(
+    'once-input-wrapper',
+    { 'once-input-wrapper--error': error },
+    { 'once-input-wrapper--disabled': disabled },
+    className
+  );
+
+  return (
+    <div className={inputWrapperClasses}>
+      {label && (
+        <label htmlFor={id} className="once-input__label">
+          {label}
+        </label>
+      )}
+      <div className="once-input__container">
+        <input
+          id={id}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          placeholder={placeholder}
+          className="once-input"
+          {...props}
+        />
+        {icon && <span className="once-input__icon">{icon}</span>}
+      </div>
+      {(helperText || error) && (
+        <p className={`once-input__helper-text ${error ? 'once-input__helper-text--error' : ''}`}>
+          {error || helperText}
+        </p>
+      )}
+    </div>
+  );
+};
+
+export default TextInput;
+```
+
+```css
+/* TextInput.css */
+.once-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--spacing-4);
+}
+
+.once-input__label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-sm);
+  margin-bottom: var(--spacing-1);
+}
+
+.once-input__container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.once-input {
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--font-size-body-md);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.once-input:hover:not(:disabled) {
+  border-color: var(--color-primary-400);
+}
+
+.once-input:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px var(--color-primary-200);
+}
+
+.once-input-wrapper--error .once-input {
+  border-color: var(--color-error-500);
+}
+
+.once-input-wrapper--error .once-input:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.once-input__icon {
+  position: absolute;
+  right: var(--spacing-3);
+  color: var(--color-text-tertiary);
+}
+
+.once-input__helper-text {
+  margin-top: var(--spacing-1);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-tertiary);
+}
+
+.once-input__helper-text--error {
+  color: var(--color-error-500);
+}
+
+.once-input-wrapper--disabled .once-input,
+.once-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+```
+
+## 🧠 Legjobb gyakorlatok
+
+### 1. Design Tokenek konzisztens használata
+
+```jsx
+// ❌ KERÜLENDŐ
+<div style={{ padding: '8px', backgroundColor: '#1F2937', borderRadius: '8px' }}>...</div>
+
+// ✅ HELYES
+<div style={{ 
+  padding: 'var(--spacing-2)', 
+  backgroundColor: 'var(--color-bg-card)', 
+  borderRadius: 'var(--radius-md)' 
+}}>...</div>
+```
+
+### 2. Komponensek újrafelhasználása
+
+```jsx
+// ❌ KERÜLENDŐ
+<button className="custom-button" onClick={handleClick}>
+  Kattints ide
+</button>
+
+// ✅ HELYES
+import { Button } from '../components/Button';
+
+<Button variant="primary" onClick={handleClick}>
+  Kattints ide
+</Button>
+```
+
+### 3. Reszponzív tervezés
+
+```css
+/* A 12 oszlopos grid rendszer használata (pl. CSS Grid-del) */
+.container {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--spacing-4);
+}
+
+/* Reszponzív töréspontok */
+@media (max-width: 768px) {
+  .card {
+    grid-column: span 6; /* Tablet nézet */
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    grid-column: span 12; /* Mobil nézet */
+  }
+}
+```
+
+### 4. Hozzáférhetőség (Accessibility)
+
+```jsx
+// Mindig használj szemantikus HTML elemeket megfelelő ARIA attribútumokkal
+<button 
+  aria-label="Bezárás" 
+  aria-describedby="closeDescription"
+>
+  <CloseIcon />
+</button>
+<div id="closeDescription" className="sr-only">
+  Bezárja a jelenlegi ablakot
+</div>
+```
+
+## 🔧 React-ba történő integráció lépései
+
+1. **Telepítsd a függőségeket**
+   ```bash
+   npm install classnames  # Class nevek egyszerű kezelése
+   ```
+
+2. **Design tokenek beállítása**
+   - Hozz létre egy `tokens.css` fájlt a design tokenek (színek, betűméretek, stb.) definiálásával
+   - Importáld a fő CSS fájlodban vagy közvetlenül az alkalmazás belépési pontjában
+
+3. **Komponensek létrehozása**
+   - Készíts egy külön mappát a komponenseknek (`/src/components`)
+   - Minden komponens saját mappában legyen a stílussal és dokumentációval együtt
+   - Használj storybook-ot, ha lehetséges, a komponensek dokumentálására
+
+4. **Exportáld a komponenseket**
+   - Hozz létre egy index.js fájlt, amely exportálja az összes komponenst
+   ```javascript
+   // src/components/index.js
+   export { default as Button } from './Button/Button';
+   export { default as TextInput } from './TextInput/TextInput';
+   // további komponensek...
+   ```
+
+5. **Használat alkalmazásokban**
+   ```jsx
+   import { Button, TextInput } from './components';
+   
+   function LoginForm() {
+     return (
+       <div className="login-form">
+         <h2>Bejelentkezés</h2>
+         <TextInput label="Email" placeholder="emailcímed@példa.hu" />
+         <TextInput label="Jelszó" type="password" placeholder="********" />
+         <Button variant="primary">Bejelentkezés</Button>
+       </div>
+     );
+   }
+   ```
+
+## 📊 Teszteszközök és ellenőrzési pontok
+
+- **Vizuális ellenőrzés**: Hasonlítsd össze az implementációt a Figma tervekkel
+- **Reszponzivitás tesztelése**: Ellenőrizd különböző képernyőméreteken
+- **Hozzáférhetőségi tesztelés**: Használj eszközöket, mint pl. Lighthouse vagy axe
+- **Konzisztencia ellenőrzése**: Győződj meg arról, hogy minden token és komponens helyesen van használva
+
+## 📝 További komponensek dokumentációja
+
+A teljes dokumentáció további komponensekkel és részletes használati útmutatókkal a Figma fájlban található: [Once UI 2.0 | Dark](https://www.figma.com/proto/yvUdwkEmnjKpxFzieIjNFg/Once-UI-2.0-%7C-Dark).
+
+## 👨‍💻 Fejlesztői tippek
+
+- Használj CSS pre-processzort (SASS/LESS) vagy CSS-in-JS megoldást (Styled Components, Emotion) a komplexebb komponenseknél
+- Tartsd szem előtt a "mobile-first" megközelítést
+- Használj CSS zmódosító osztályokat (BEM módszertan) az állapotok kezelésére
+- Az ikonokat SVG-ként implementáld a jobb skálázhatóság érdekében
+- Dokumentáld a komponenseket és azok variánsait, állapotait
