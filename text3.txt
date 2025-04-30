@@ -1,0 +1,877 @@
+Rendben, nézzük meg, hogyan implementálhatjuk a "Once UI 2.0 | Dark" design rendszert Reactban, TypeScripttel, a megadott szempontok alapján. A példákban a CSS Modules stratégiát fogom használni CSS változókkal, mivel ez jól elkülöníti a stílusokat, scope-olja őket, és közvetlenül használja a kért CSS változókat.
+
+Fontos megjegyzés: Mivel nem tudok közvetlenül interakcióba lépni a Figma fájllal és kinyerni a pontos hex kódokat, méreteket stb., az alábbi kódrészletek reprezentatív értékeket használnak a Figmában látott vizuális stílus alapján. A pontos értékeket (színek, méretek, árnyékok stb.) neked kell majd kinyerned a Figma Inspect paneljéből és behelyettesítened a CSS változókba!
+
+1. Styling Stratégia és Design Tokenek Implementációja
+
+Stratégia: CSS Modules + CSS Custom Properties (Variables).
+
+CSS Modules: Minden komponens saját .module.css fájlt kap, ami automatikusan scope-olja a class neveket, elkerülve a globális névütközéseket.
+
+CSS Custom Properties: A design tokeneket (színek, spacing, stb.) globálisan definiáljuk CSS változókban, amelyeket a komponensek stílusai újrahasználnak.
+
+1.1. Design Tokenek Struktúrája és Definiálása
+
+Hozz létre egy központi fájlt a tokeneknek, pl. src/styles/tokens.css:
+
+/* src/styles/tokens.css */
+
+:root { /* VAGY specifikus téma szelektor, pl. body[data-theme='dark'] */
+
+  /* === Colors === */
+  /* Primary (Példa: Kék) */
+  --color-primary-100: #E0F2FE; /* Nagyon világos */
+  --color-primary-500: #3B82F6; /* Alap */
+  --color-primary-600: #2563EB; /* Sötétebb (Hover/Active) */
+  --color-primary-700: #1D4ED8; /* Még sötétebb */
+
+  /* Secondary (Példa: Magenta) */
+  --color-secondary-100: #FCE7F3;
+  --color-secondary-500: #EC4899;
+  --color-secondary-600: #DB2777;
+  --color-secondary-700: #BE185D;
+
+  /* Neutral / Grayscale (Sötét téma!) */
+  --color-white: #FFFFFF;
+  --color-gray-100: #F3F4F6; /* Világos szürke szöveghez, ha kell */
+  --color-gray-200: #E5E7EB;
+  --color-gray-300: #D1D5DB; /* Másodlagos szöveg */
+  --color-gray-400: #9CA3AF; /* Finom keretek, placeholder */
+  --color-gray-500: #6B7280; /* Disabled elemek */
+  --color-gray-600: #4B5563; /* Input keret */
+  --color-gray-700: #374151; /* Kártya/Input háttér */
+  --color-gray-800: #1F2937; /* Kiemelt háttér */
+  --color-gray-900: #111827; /* Fő háttér */
+  --color-black: #000000;
+
+  /* Text */
+  --color-text-primary: var(--color-gray-100);   /* Fő szöveg */
+  --color-text-secondary: var(--color-gray-300); /* Másodlagos szöveg */
+  --color-text-disabled: var(--color-gray-500);  /* Disabled szöveg */
+  --color-text-placeholder: var(--color-gray-400);/* Placeholder */
+  --color-text-on-primary: var(--color-white);   /* Szöveg primary gombon */
+  --color-text-on-secondary: var(--color-white); /* Szöveg secondary gombon */
+  --color-text-link: var(--color-primary-500);   /* Link színe */
+  --color-text-error: var(--color-error-500);    /* Hiba szöveg */
+
+  /* Background */
+  --color-bg-body: var(--color-gray-900);        /* Body háttér */
+  --color-bg-surface: var(--color-gray-800);     /* Kiemelt felület (pl. Modal header) */
+  --color-bg-element: var(--color-gray-700);     /* Elem háttér (Card, Input) */
+  --color-bg-hover: rgba(255, 255, 255, 0.05);    /* Finom hover háttér */
+  --color-bg-active: rgba(255, 255, 255, 0.08);   /* Finom active háttér */
+  --color-bg-disabled: var(--color-gray-600);    /* Disabled háttér */
+
+  /* Border */
+  --color-border-subtle: var(--color-gray-700);  /* Nagyon finom elválasztó */
+  --color-border-default: var(--color-gray-600); /* Alap keret (pl. Input) */
+  --color-border-hover: var(--color-gray-500);   /* Hover keret */
+  --color-border-focus: var(--color-primary-500);/* Focus keret */
+  --color-border-error: var(--color-error-500);  /* Hiba keret */
+
+  /* System Colors */
+  --color-success-500: #10B981; /* Zöld */
+  --color-warning-500: #F59E0B; /* Narancs */
+  --color-error-500: #EF4444;   /* Piros */
+  --color-info-500: #3B82F6;    /* Kék (lehet primary) */
+
+  /* === Typography === */
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --font-family-mono: 'Menlo', 'Consolas', 'Monaco', monospace;
+
+  /* Font Sizes (Példák, igazítsd a Figmához!) */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-md: 1rem;       /* 16px (base) */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+  --font-size-5xl: 3rem;      /* 48px */
+
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;   /* Alap szöveghez */
+  --line-height-relaxed: 1.75;
+  --line-height-heading: 1.2;  /* Címsorokhoz */
+
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+
+  /* === Spacing (4px base) === */
+  --spacing-px: 1px;
+  --spacing-0: 0;
+  --spacing-1: 0.25rem;  /* 4px */
+  --spacing-2: 0.5rem;   /* 8px */
+  --spacing-3: 0.75rem;  /* 12px */
+  --spacing-4: 1rem;     /* 16px */
+  --spacing-5: 1.25rem;  /* 20px */
+  --spacing-6: 1.5rem;   /* 24px */
+  --spacing-8: 2rem;     /* 32px */
+  --spacing-10: 2.5rem;  /* 40px */
+  --spacing-12: 3rem;    /* 48px */
+  --spacing-16: 4rem;    /* 64px */
+  --spacing-20: 5rem;    /* 80px */
+  /* ... és így tovább, ha szükséges */
+
+  /* === Borders & Radius === */
+  --border-width-default: 1px;
+  --border-width-thick: 2px;
+
+  --radius-none: 0;
+  --radius-sm: 0.25rem;  /* 4px */
+  --radius-md: 0.5rem;   /* 8px (gyakori gombokhoz, inputokhoz) */
+  --radius-lg: 0.75rem;  /* 12px (kártyákhoz) */
+  --radius-xl: 1rem;     /* 16px */
+  --radius-full: 9999px; /* Pill shape */
+
+  /* === Shadows (Sötét témához finomabbak!) === */
+  /* Példák - Ellenőrizd a Figmát! */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.15), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+  /* === Transitions === */
+  --transition-duration-fast: 150ms;
+  --transition-duration-normal: 200ms;
+  --transition-timing-function: ease-in-out;
+  --transition-colors: background-color var(--transition-duration-fast) var(--transition-timing-function),
+                       border-color var(--transition-duration-fast) var(--transition-timing-function),
+                       color var(--transition-duration-fast) var(--transition-timing-function),
+                       box-shadow var(--transition-duration-fast) var(--transition-timing-function);
+
+  /* === Z-Index === */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-modal-backdrop: 1040;
+  --z-index-modal: 1050;
+  --z-index-popover: 1060;
+  --z-index-tooltip: 1070;
+}
+
+
+1.2. Globális Stílusok Beállítása
+
+Hozz létre egy src/styles/global.css fájlt:
+
+/* src/styles/global.css */
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  /* Alap focus stílus eltávolítása, mert komponens szinten kezeljük */
+  outline: none;
+}
+
+html {
+  font-size: 100%; /* Alap 16px */
+}
+
+body {
+  font-family: var(--font-family-sans);
+  background-color: var(--color-bg-body);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* Alap link stílus */
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+  transition: var(--transition-colors);
+}
+a:hover {
+  text-decoration: underline;
+  color: var(--color-primary-600); /* Példa hover szín */
+}
+
+/* Alap címsor stílusok (méreteket a tokenekből) */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+  margin-bottom: var(--spacing-4); /* Példa margó */
+  color: var(--color-text-primary); /* Explicit szín */
+}
+h1 { font-size: var(--font-size-5xl); }
+h2 { font-size: var(--font-size-4xl); }
+h3 { font-size: var(--font-size-3xl); }
+h4 { font-size: var(--font-size-2xl); }
+h5 { font-size: var(--font-size-xl); }
+h6 { font-size: var(--font-size-lg); }
+
+/* Alap bekezdés */
+p {
+  margin-bottom: var(--spacing-4);
+}
+
+/* Focus stílus (láthatóság biztosítása billentyűzet használóknak) */
+/* Ezt komponens szinten finomítjuk, de egy alap fallback jó lehet */
+*:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm); /* Illeszkedjen az elemhez */
+}
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+Css
+IGNORE_WHEN_COPYING_END
+
+Importáld ezt a global.css-t az alkalmazás belépési pontjánál (pl. src/index.tsx vagy src/App.tsx):
+
+// src/index.tsx (vagy App.tsx)
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './styles/global.css'; // <<< Globális stílusok importálása
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+TypeScript
+IGNORE_WHEN_COPYING_END
+2. Komponensek React Implementációja (Példák)
+
+Itt az Atomic Design elveket követve atomokra és molekulákra bontjuk a példákat.
+
+2.1. Button Komponens (Atom)
+
+src/components/atoms/Button/Button.tsx
+
+src/components/atoms/Button/Button.module.css
+
+Button.tsx:
+
+import React, { forwardRef, ReactNode } from 'react';
+import classnames from 'classnames'; // npm install classnames @types/classnames
+import styles from './Button.module.css';
+
+// Props definíciója TypeScript interfésszel
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'outline' | 'text' | 'iconOnly';
+  size?: 'sm' | 'md' | 'lg';
+  iconLeft?: ReactNode;
+  iconRight?: ReactNode;
+  children?: ReactNode; // Kell, ha nem iconOnly
+  className?: string;   // Külső class nevek fogadására
+}
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      variant = 'primary',
+      size = 'md',
+      iconLeft,
+      iconRight,
+      children,
+      className,
+      disabled,
+      type = 'button', // Alapértelmezett type
+      ...props // Minden más HTML button attribútum (pl. onClick)
+    },
+    ref
+  ) => {
+    const buttonClasses = classnames(
+      styles.button,
+      styles[variant], // pl. styles.primary
+      styles[`size-${size}`], // pl. styles['size-md']
+      {
+        [styles.iconOnly]: variant === 'iconOnly' || (!children && (iconLeft || iconRight)),
+        [styles.hasIconLeft]: !!iconLeft,
+        [styles.hasIconRight]: !!iconRight,
+        [styles.disabled]: disabled, // Bár a :disabled is működik, explicit class hasznos lehet
+      },
+      className // Külső class nevek
+    );
+
+    // ARIA: Icon-only gombokhoz kell aria-label
+    const ariaLabel = variant === 'iconOnly' ? props['aria-label'] || 'Button' : undefined;
+    if (variant === 'iconOnly' && !ariaLabel && process.env.NODE_ENV === 'development') {
+        console.warn('IconOnly Button requires an aria-label prop for accessibility.');
+    }
+
+    return (
+      <button
+        ref={ref}
+        className={buttonClasses}
+        type={type}
+        disabled={disabled}
+        aria-disabled={disabled} // Explicit ARIA attribútum
+        aria-label={ariaLabel}
+        {...props}
+      >
+        {iconLeft && <span className={styles.iconWrapper}>{iconLeft}</span>}
+        {/* IconOnly esetén a children nem jelenik meg explicit */}
+        {variant !== 'iconOnly' && children && <span>{children}</span>}
+        {iconRight && <span className={styles.iconWrapper}>{iconRight}</span>}
+      </button>
+    );
+  }
+);
+
+Button.displayName = 'Button'; // Jó gyakorlat forwardRef esetén
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+TypeScript
+IGNORE_WHEN_COPYING_END
+
+Button.module.css:
+
+/* src/components/atoms/Button/Button.module.css */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* Focus stílushoz, ha kell */
+  font-family: var(--font-family-sans);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: var(--border-width-default) solid transparent;
+  transition: var(--transition-colors), transform var(--transition-duration-fast) ease;
+  text-decoration: none; /* Linkként használt gombokhoz */
+  white-space: nowrap; /* Ne törjön több sorba */
+}
+
+/* === Sizes === (Igazítsd a Figmához!) */
+.size-sm {
+  padding: var(--spacing-1) var(--spacing-3);
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-sm);
+  min-height: calc(var(--font-size-sm) * var(--line-height-normal) + 2 * var(--spacing-1) + 2 * var(--border-width-default));
+}
+.size-md {
+  padding: var(--spacing-2) var(--spacing-4);
+  font-size: var(--font-size-md);
+  border-radius: var(--radius-md);
+   min-height: calc(var(--font-size-md) * var(--line-height-normal) + 2 * var(--spacing-2) + 2 * var(--border-width-default));
+}
+.size-lg {
+  padding: var(--spacing-3) var(--spacing-6);
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-lg);
+   min-height: calc(var(--font-size-lg) * var(--line-height-normal) + 2 * var(--spacing-3) + 2 * var(--border-width-default));
+}
+
+/* === Variants === */
+
+/* Primary */
+.primary {
+  background-color: var(--color-primary-500);
+  color: var(--color-text-on-primary);
+  border-color: var(--color-primary-500);
+}
+.primary:not(:disabled):hover {
+  background-color: var(--color-primary-600);
+  border-color: var(--color-primary-600);
+}
+.primary:not(:disabled):active {
+  background-color: var(--color-primary-700);
+  border-color: var(--color-primary-700);
+  transform: scale(0.98); /* Opcionális vizuális visszajelzés */
+}
+
+/* Secondary */
+.secondary {
+  background-color: var(--color-secondary-500);
+  color: var(--color-text-on-secondary);
+  border-color: var(--color-secondary-500);
+}
+.secondary:not(:disabled):hover {
+  background-color: var(--color-secondary-600);
+  border-color: var(--color-secondary-600);
+}
+.secondary:not(:disabled):active {
+  background-color: var(--color-secondary-700);
+  border-color: var(--color-secondary-700);
+  transform: scale(0.98);
+}
+
+/* Outline */
+.outline {
+  background-color: transparent;
+  color: var(--color-primary-500); /* Vagy más szín? Ellenőrizd! */
+  border-color: var(--color-primary-500);
+}
+.outline:not(:disabled):hover {
+  background-color: rgba(var(--color-primary-500-rgb, 59, 130, 246), 0.1); /* Szín RGB változata kell a tokenekbe! */
+  border-color: var(--color-primary-600);
+  color: var(--color-primary-600);
+}
+.outline:not(:disabled):active {
+  background-color: rgba(var(--color-primary-500-rgb, 59, 130, 246), 0.15);
+  border-color: var(--color-primary-700);
+  color: var(--color-primary-700);
+  transform: scale(0.98);
+}
+
+/* Text (Ghost) */
+.text {
+  background-color: transparent;
+  color: var(--color-text-primary); /* Vagy primary szín? Ellenőrizd! */
+  border-color: transparent;
+}
+.text:not(:disabled):hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-primary-500); /* Példa hover szín */
+}
+.text:not(:disabled):active {
+  background-color: var(--color-bg-active);
+  color: var(--color-primary-600);
+}
+
+/* IconOnly */
+.iconOnly {
+  padding: var(--spacing-2); /* Általában négyzetes */
+}
+/* Méret specifikus padding felülírás iconOnly esetén */
+.iconOnly.size-sm { padding: var(--spacing-1); }
+.iconOnly.size-md { padding: var(--spacing-2); }
+.iconOnly.size-lg { padding: var(--spacing-3); }
+
+/* === States === */
+
+/* Focus (focus-visible használata a jobb hozzáférhetőségért) */
+.button:focus-visible {
+  outline: var(--border-width-thick) solid var(--color-border-focus);
+  outline-offset: 2px;
+  /* A radius illeszkedjen a gombhoz */
+}
+.button.size-sm:focus-visible { border-radius: var(--radius-sm); }
+.button.size-md:focus-visible { border-radius: var(--radius-md); }
+.button.size-lg:focus-visible { border-radius: var(--radius-lg); }
+/* Icon only lehet kerek is? */
+.button.iconOnly:focus-visible { border-radius: var(--radius-full); } /* Ha kör alakú */
+
+
+/* Disabled */
+.button:disabled,
+.button.disabled { /* Explicit class is jó lehet */
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none; /* Ne legyen active effekt */
+  /* Szükség szerint felülírhatja a variánsok stílusát */
+  /* Pl. Primary disabled */
+  /* background-color: var(--color-gray-600); */
+  /* border-color: var(--color-gray-600); */
+  /* color: var(--color-text-disabled); */
+}
+
+/* === Icons === */
+.iconWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1; /* Fontos az ikonok központosításához */
+}
+.iconWrapper svg { /* Feltételezve, hogy SVG ikonokat használsz */
+  width: 1em; /* Vagy fix méret a Figmából */
+  height: 1em;
+}
+
+/* Térköz az ikon és a szöveg között */
+.button.hasIconLeft > span:not(:first-child) { margin-left: var(--spacing-2); }
+.button.hasIconRight > span:not(:last-child) { margin-right: var(--spacing-2); }
+
+/* IconOnly esetén nincs szükség extra térközre */
+.button.iconOnly > .iconWrapper { margin: 0; }
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+Css
+IGNORE_WHEN_COPYING_END
+
+2.2. TextInput Komponens (Molekula - labellel, helper texttel)
+
+src/components/molecules/TextInput/TextInput.tsx
+
+src/components/molecules/TextInput/TextInput.module.css
+
+TextInput.tsx:
+
+import React, { forwardRef, useId, ReactNode } from 'react';
+import classnames from 'classnames';
+import styles from './TextInput.module.css';
+
+// Props
+export interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  hideLabel?: boolean; // Ha vizuálisan rejtett, de ARIA számára elérhető kell legyen
+  helperText?: string;
+  error?: string | boolean; // Hibaüzenet vagy csak jelzés
+  iconLeft?: ReactNode;
+  iconRight?: ReactNode;
+  containerClassName?: string; // A külső wrapper div classa
+}
+
+export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
+  (
+    {
+      label,
+      hideLabel = false,
+      id,
+      helperText,
+      error,
+      iconLeft,
+      iconRight,
+      className, // Az input elem classa
+      containerClassName,
+      disabled,
+      required,
+      ...props // Minden más HTML input attribútum (pl. value, onChange, name, type='text'/'email'/'password' etc.)
+    },
+    ref
+  ) => {
+    const generatedId = useId(); // Automatikus ID generálása, ha nincs megadva
+    const inputId = id || generatedId;
+    const hasError = !!error;
+    const helperTextId = helperText ? `${inputId}-helper` : undefined;
+    const errorTextId = hasError && typeof error === 'string' ? `${inputId}-error` : undefined;
+
+    // ARIA: Input leírása helper vagy error texttel
+    const describedBy = [helperTextId, errorTextId].filter(Boolean).join(' ') || undefined;
+
+    const containerClasses = classnames(
+      styles.container,
+      {
+        [styles.hasError]: hasError,
+        [styles.disabled]: disabled,
+      },
+      containerClassName
+    );
+
+    const inputWrapperClasses = classnames(
+      styles.inputWrapper,
+      {
+        [styles.hasIconLeft]: !!iconLeft,
+        [styles.hasIconRight]: !!iconRight,
+      }
+    );
+
+    const inputClasses = classnames(
+      styles.input,
+      className // Külső class nevek az inputra
+    );
+
+    const labelClasses = classnames(
+        styles.label,
+        { [styles.visuallyHidden]: hideLabel }
+    );
+
+    return (
+      <div className={containerClasses}>
+        {label && (
+          <label htmlFor={inputId} className={labelClasses}>
+            {label} {required && <span aria-hidden="true">*</span>}
+          </label>
+        )}
+        <div className={inputWrapperClasses}>
+          {iconLeft && <span className={classnames(styles.icon, styles.iconLeft)}>{iconLeft}</span>}
+          <input
+            ref={ref}
+            id={inputId}
+            className={inputClasses}
+            disabled={disabled}
+            required={required}
+            aria-invalid={hasError ? 'true' : 'false'}
+            aria-describedby={describedBy}
+            aria-required={required}
+            {...props} // Pl. type, value, onChange, placeholder
+          />
+          {iconRight && <span className={classnames(styles.icon, styles.iconRight)}>{iconRight}</span>}
+        </div>
+        {/* Helper text VAGY Error text jelenik meg */}
+        {!hasError && helperText && (
+          <p id={helperTextId} className={styles.helperText}>
+            {helperText}
+          </p>
+        )}
+        {hasError && typeof error === 'string' && (
+          <p id={errorTextId} className={styles.errorText} role="alert">
+            {error}
+          </p>
+        )}
+      </div>
+    );
+  }
+);
+
+TextInput.displayName = 'TextInput';
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+TypeScript
+IGNORE_WHEN_COPYING_END
+
+TextInput.module.css:
+
+/* src/components/molecules/TextInput/TextInput.module.css */
+
+.container {
+  width: 100%; /* Alapértelmezetten teljes szélesség */
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  display: block;
+  margin-bottom: var(--spacing-1);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+/* Vizuálisan rejtett, de screen reader számára elérhető label */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input {
+  display: block;
+  width: 100%;
+  background-color: var(--color-bg-element);
+  color: var(--color-text-primary);
+  border: var(--border-width-default) solid var(--color-border-default);
+  border-radius: var(--radius-md); /* Igazítsd a gombokhoz */
+  padding: var(--spacing-2) var(--spacing-3); /* Méretfüggő lehet */
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  transition: var(--transition-colors);
+}
+
+.input::placeholder {
+  color: var(--color-text-placeholder);
+  opacity: 1; /* Firefox fix */
+}
+
+/* Input Padding ikonok esetén */
+.inputWrapper.hasIconLeft .input { padding-left: calc(var(--spacing-3) + var(--spacing-4)); } /* Példa */
+.inputWrapper.hasIconRight .input { padding-right: calc(var(--spacing-3) + var(--spacing-4)); } /* Példa */
+
+/* Icons */
+.icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary); /* Ikon színe */
+  pointer-events: none; /* Ne zavarja a kattintást az inputra */
+  width: var(--spacing-4); /* Ikon mérete */
+  height: var(--spacing-4);
+}
+.icon svg { width: 100%; height: 100%; }
+
+.iconLeft { left: var(--spacing-3); }
+.iconRight { right: var(--spacing-3); }
+
+/* States */
+.input:hover:not(:disabled):not([aria-invalid="true"]) {
+  border-color: var(--color-border-hover);
+}
+
+.input:focus:not(:disabled) {
+  outline: none; /* Már van globális focus-visible */
+  border-color: var(--color-border-focus);
+  box-shadow: 0 0 0 var(--border-width-thick) var(--color-border-focus); /* Focus gyűrű */
+}
+
+.input:disabled,
+.container.disabled .input {
+  background-color: var(--color-bg-disabled);
+  color: var(--color-text-disabled);
+  border-color: var(--color-border-default);
+  cursor: not-allowed;
+}
+.container.disabled .label,
+.container.disabled .helperText,
+.container.disabled .icon {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* Error State */
+.container.hasError .input,
+.input[aria-invalid="true"] {
+  border-color: var(--color-border-error);
+}
+.container.hasError .input:focus {
+   border-color: var(--color-border-error);
+   box-shadow: 0 0 0 var(--border-width-thick) var(--color-border-error);
+}
+.container.hasError .label {
+  color: var(--color-text-error);
+}
+
+/* Helper & Error Text */
+.helperText,
+.errorText {
+  margin-top: var(--spacing-1);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-tight);
+}
+
+.helperText {
+  color: var(--color-text-secondary);
+}
+
+.errorText {
+  color: var(--color-text-error);
+  font-weight: var(--font-weight-medium);
+}
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+Css
+IGNORE_WHEN_COPYING_END
+3. Komponensek Dokumentálása (Példa: Button)
+
+A legjobb erre a Storybook használata, de egy egyszerű Markdown dokumentáció is hasznos lehet:
+
+# Button Komponens
+
+A `Button` komponens a standard gomb interakciók megjelenítésére szolgál.
+
+## Használat
+
+```jsx
+import { Button } from './components/atoms/Button';
+import { IconShoppingCart } from './components/icons'; // Példa ikon
+
+function MyComponent() {
+  return (
+    <div>
+      <Button variant="primary" onClick={() => alert('Primary clicked!')}>
+        Primary Button
+      </Button>
+      <Button variant="secondary" size="lg">
+        Large Secondary
+      </Button>
+      <Button variant="outline" disabled>
+        Disabled Outline
+      </Button>
+      <Button variant="text">Text Button</Button>
+      <Button
+        variant="primary"
+        iconLeft={<IconShoppingCart />}
+        onClick={() => console.log('Add to cart')}
+      >
+        Add to Cart
+      </Button>
+       <Button
+        variant="iconOnly"
+        aria-label="Settings" // FONTOS az accessibility miatt!
+        size="sm"
+        onClick={() => console.log('Settings')}
+       >
+         <IconSettings /> {/* Példa ikon */}
+       </Button>
+    </div>
+  );
+}
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+Markdown
+IGNORE_WHEN_COPYING_END
+Props
+Prop	Típus	Alapértelmezett	Leírás
+variant	'primary', 'secondary', 'outline', 'text', 'iconOnly'	'primary'	A gomb vizuális stílusa.
+size	'sm', 'md', 'lg'	'md'	A gomb mérete (padding, font-size).
+iconLeft	ReactNode	undefined	A gomb szövege előtt megjelenő ikon.
+iconRight	ReactNode	undefined	A gomb szövege után megjelenő ikon.
+children	ReactNode	undefined	A gomb tartalma (általában szöveg). iconOnly esetén nem jelenik meg.
+disabled	boolean	false	Letiltja a gombot, megváltoztatja a stílusát és a kurzort.
+className	string	undefined	Extra CSS osztályok a gomb elemhez adásához.
+type	'button', 'submit', 'reset'	'button'	A HTML <button> elem type attribútuma.
+...rest	React.ButtonHTMLAttributes<HTMLButtonElement>		Minden más standard HTML button attribútum (pl. onClick, aria-label, stb.).
+Variánsok és Állapotok
+
+Variánsok: primary, secondary, outline, text, iconOnly határozzák meg a fő megjelenést.
+
+Méretek: sm, md, lg befolyásolják a gomb méretét.
+
+Állapotok: A komponens automatikusan kezeli a :hover, :active, :focus-visible és :disabled állapotokat a CSS-ben definiált stílusokkal. A disabled prop explicit beállításával lehet letiltani. Az iconOnly gombokhoz kötelező az aria-label prop megadása a hozzáférhetőség érdekében.
+
+## 4. További Komponensek Implementálása
+
+A többi kért komponenst (Textarea, Select, Checkbox, Radio, Toggle, Card, Modal, Tabs, Breadcrumbs, Pagination, Alert, Toast, Progress) hasonló elvek mentén kell implementálni:
+
+1.  **Atomic Design:** Határozd meg, hogy atom (`Checkbox`, `Radio`), molekula (`TextInput` labellel, `Alert` ikonnal és szöveggel) vagy organizmus (`Card` képpel, címmel, szöveggel, gombokkal; `Modal` fejléccel, tartalommal, lábléccel).
+2.  **Props:** Definiáld a szükséges TypeScript propokat a variációkhoz, állapotokhoz és tartalomhoz.
+3.  **Markup (TSX):** Hozd létre a megfelelő HTML struktúrát, ügyelve a szemantikára és az ARIA attribútumokra (pl. `role`, `aria-checked`, `aria-labelledby`, `aria-describedby`, `aria-modal`).
+4.  **Styling (CSS Modules):** Hozd létre a `.module.css` fájlt, használd a CSS változókat a tokenekből, definiáld a variánsokat és állapotokat osztályokkal és pszeudo-osztályokkal (`:hover`, `:focus-visible`, stb.).
+5.  **Accessibility:** Különösen figyelj a form elemeknél a `label`-`input` összekapcsolásra (`htmlFor`/`id`), a modal-oknál a focus trapping-re és az `aria-modal="true"` használatára, a tab-oknál a `role="tablist/tab/tabpanel"` és az `aria-selected` attribútumokra.
+6.  **Reszponzivitás:** Használj media query-ket a CSS Modules fájlokban, ha a komponensnek eltérően kell viselkednie különböző képernyőméreteken (pl. Card elrendezése). A 12 oszlopos gridet magasabb szintű layout komponensekben vagy a lapok szerkezetében használd.
+
+## 5. Hozzáférhetőség (Accessibility)
+
+Ez kulcsfontosságú:
+
+*   **Szemantikus HTML:** Mindig a megfelelő HTML elemet használd (pl. `<button>`, `<nav>`, `<input type="checkbox">`).
+*   **Billentyűzet Navigáció:** Biztosítsd, hogy minden interaktív elem elérhető és kezelhető legyen billentyűzettel. Használd a `:focus-visible` pseudó-osztályt a látható focus jelzéshez.
+*   **ARIA Attribútumok:** Használd őket helyesen, ahol a natív HTML nem elegendő (pl. `aria-label` icon-only gomboknál, `aria-invalid` hibás inputoknál, `role` komplexebb widgeteknél mint Tabs, Modal).
+*   **Színkontraszt:** **Ellenőrizd a Figmában megadott színek kontrasztarányát** a WCAG AA szint követelményeinek megfelelően, különösen szöveg és háttér között. Használj online kontrasztellenőrző eszközöket.
+*   **Form Címkék:** Minden form elemhez tartozzon látható vagy vizuálisan rejtett (`visuallyHidden` class) `<label>`.
+
+---
+
+Ez egy kiindulási pont a "Once UI 2.0 | Dark" implementálásához Reactban. Ne feledd, a legfontosabb a Figma fájl alapos tanulmányozása és a **pontos design token értékek kinyerése** onnan. Sok sikert! Ha egy konkrét további komponens implementációjára van szükséged, kérdezz bátran!
+IGNORE_WHEN_COPYING_START
+content_copy
+download
+Use code with caution.
+IGNORE_WHEN_COPYING_END
