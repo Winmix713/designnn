@@ -1,0 +1,90 @@
+Once UI 2.0 | Dark - Frontend Implementációs Prompt
+Segíts nekem a Once UI 2.0 design rendszer Dark témájának React implementációjában. Arra kérlek, segíts konkrét kódrészletekkel, amelyek pontosan követik a design rendszer specifikációját.
+Design rendszer áttekintése
+A Once UI 2.0 | Dark egy modern, konzisztens és felhasználóbarát sötét témájú design rendszer, amely az alábbi alapelveken nyugszik:
+
+Konzisztencia az egész felületen
+Tisztaság és jó olvashatóság sötét környezetben
+Modularitás az újrafelhasználható komponensekkel
+Egyértelmű vizuális visszajelzések interakciókra
+
+Figma referencia
+A design részletes specifikációja megtalálható itt: Once UI 2.0 | Dark Figma link
+Amit kérek:
+
+Design tokenek implementációja
+
+Segíts a Figma tervben látható színek, betűméretek, térközök, árnyékok és saroklekerekítések CSS változókba konvertálásában
+Javasolj egy struktúrát a design tokenek szervezésére
+
+
+Komponensek React implementációja
+Segíts konkrét komponensek implementálásában a következők szerint:
+
+Pontos TypeScript/JavaScript és CSS/SCSS kód
+A komponens összes variánsának és állapotának kezelése (default, hover, active, focus, disabled)
+Hozzáférhetőségi (accessibility) szempontok figyelembevétele
+Reszponzív viselkedés
+
+
+Komponensek dokumentálása
+
+Példakód a komponens használatához
+A komponens összes prop-jának leírása
+Variánsok és állapotok dokumentálása
+
+
+Styling stratégia
+
+Javasolj megfelelő megközelítést (CSS Modules, Styled Components, Emotion, vagy Tailwind CSS)
+Mutasd be, hogyan lehet konzisztensen használni a design tokeneket
+
+
+
+Specifikus komponensek, amikre szükségem lehet:
+
+Button komponens az összes variánssal (primary, secondary, tertiary, outline, icon-only) és mérettel (small, medium, large)
+Form elemek
+
+TextInput (alap szövegbeviteli mező)
+Textarea (többsoros szövegbevitel)
+Select (legördülő lista)
+Checkbox (jelölőnégyzet)
+Radio Button (választógomb)
+Toggle Switch (kapcsoló)
+
+
+Card komponens különböző elrendezésekkel és tartalmi opciókkal
+Modal/Dialog komponens fejléccel, tartalommal és akciógombokkal
+Navigation komponensek
+
+Tabs (fülek)
+Breadcrumbs (navigációs útvonal)
+Pagination (lapozás)
+
+
+Feedback komponensek
+
+Alert (értesítés)
+Toast (felugró értesítés)
+Progress indicators (betöltésjelzők)
+
+
+
+Konkrét követelmények
+
+Inter betűtípus használata
+4px-alapú térközrendszer
+12 oszlopos grid elrendezés
+CSS változók használata a design tokenekhez
+Megfelelő kontraszt a sötét témában (WCAG megfelelőség)
+Konzisztens hover, active, focus és disabled állapotok
+
+Kérlek, adj mindenre TypeScript/React kódrészletet, ahol bármely komponens CSS és JS implementációját mutatod be, hogy a fejlesztők pontosan megértsék, hogyan kell ezeket használni.
+Igények és szempontok
+
+Preferálom a tiszta, jól kommentezett kódot
+A komponenseket atomic design elvek szerint szervezd (atoms, molecules, organisms)
+A hozzáférhetőség (accessibility) fontos szempont
+A kód legyen karbantartható és jól skálázható
+Legyen kompatibilis a modern böngészőkkel
